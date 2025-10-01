@@ -1,16 +1,13 @@
 from flask import Flask
-from routes.routersMateriaPrima import materia_prima_routes
-from dba.database import db, connection_string
+from controllers.controllerMaterialPrima import materialPrima_db
+from database.dba import init_app
+from dotenv import load_dotenv
 
-# Configurar conexão
-app.config["SQLALCHEMY_DATABASE_URI"] = connection_string
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-# Inicializar banco
-db.init_app(app)
-
+load_dotenv()
 app = Flask(__name__)
-app.register_blueprint(materia_prima_routes)
+init_app(app)
+app.register_blueprint(materialPrima_db)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

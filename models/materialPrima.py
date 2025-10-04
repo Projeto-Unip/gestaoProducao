@@ -18,14 +18,18 @@ class materia_prima(db.Model):
         self.lote = lote
         self.data_validade = data_validade
     
-    def to_disc(self):
-        return {
+    def to_disc(self, incluir_fornecedores=False):
+        data = {
+            'id': self.id_materiaPrima,
             'nome': self.nome,
             'formula': self.formula,
-            'quatidade': self.quantidade,
+            'quantidade': self.quantidade,
             'lote': self.lote,
             'dataValidade': self.data_validade
         }
+        if incluir_fornecedores:
+            data['fornecedores'] = [f.to_disc() for f in self.fornecedores]
+        return data
     
         
         

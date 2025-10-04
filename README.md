@@ -294,9 +294,10 @@ Este projeto foi desenvolvido como parte do **Projeto Integrado Multidisciplinar
 
 ---
 
-## 👥 Autores
+## 👥 Autor
 
 Desenvolvido por estudantes de ADS - UNIP
+Autor: Jhonatan Oliveira Silva
 
 ---
 

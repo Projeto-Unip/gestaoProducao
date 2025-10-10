@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from models.fornecedor import Fornecedor
+from models.fornecedor import fornecedor
 from models.materialPrima import materia_prima
 from database.dba import db
 
@@ -13,7 +13,7 @@ def vincularMaterial():
         if not dados or 'id_fornecedor' not in dados or 'id_materiaPrima' not in dados:
             return jsonify({"erro": "Dados incompletos. Envie id_fornecedor e id_materiaPrima"}), 400
         
-        fornecedor = db.session.get(Fornecedor, dados['id_fornecedor'])
+        forn = db.session.get(fornecedor, dados['id_fornecedor'])
         material = db.session.get(materia_prima, dados['id_materiaPrima'])
         
         if not fornecedor:
@@ -28,7 +28,7 @@ def vincularMaterial():
         fornecedor.materiais.append(material)
         db.session.commit()
         
-        return jsonify({"mensagem": f"Material '{material.nome}' vinculado ao fornecedor '{fornecedor.razaoSocial}' com sucesso."}), 201
+        return jsonify({"mensagem": f"Material '{material.nome}' vinculado ao fornecedor '{fornecedor.razao_social}' com sucesso."}), 201
     
     except Exception as e:
         db.session.rollback()
@@ -43,7 +43,7 @@ def desvincularMaterial():
         if not dados or 'id_fornecedor' not in dados or 'id_materiaPrima' not in dados:
             return jsonify({"erro": "Dados incompletos. Envie id_fornecedor e id_materiaPrima"}), 400
         
-        fornecedor = db.session.get(Fornecedor, dados['id_fornecedor'])
+        forn = db.session.get(fornecedor, dados['id_fornecedor'])
         material = db.session.get(materia_prima, dados['id_materiaPrima'])
         
         if not fornecedor:
@@ -58,7 +58,7 @@ def desvincularMaterial():
         fornecedor.materiais.remove(material)
         db.session.commit()
         
-        return jsonify({"mensagem": f"Material '{material.nome}' desvinculado do fornecedor '{fornecedor.razaoSocial}' com sucesso."}), 200
+        return jsonify({"mensagem": f"Material '{material.nome}' desvinculado do fornecedor '{fornecedor.razao_social}' com sucesso."}), 200
     
     except Exception as e:
         db.session.rollback()
@@ -68,14 +68,14 @@ def desvincularMaterial():
 @vinculo_db.route("/fornecedor/<int:idFornecedor>/materiais", methods=["GET"])
 def listarMateriaisFornecedor(idFornecedor):
     try:
-        fornecedor = db.session.get(Fornecedor, idFornecedor)
+        forn = db.session.get(fornecedor, idFornecedor)
         
         if not fornecedor:
             return jsonify({"erro": f"Fornecedor com ID {idFornecedor} não encontrado."}), 404
         
         materiais = [m.to_disc() for m in fornecedor.materiais]
         return jsonify({
-            "fornecedor": fornecedor.razaoSocial,
+            "fornecedor": fornecedor.razao_social,
             "materiais": materiais
         }), 200
     

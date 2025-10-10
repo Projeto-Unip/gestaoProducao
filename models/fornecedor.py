@@ -5,18 +5,18 @@ fornecedor_materiaPrima = db.Table('fornecedor_materiaPrima',
     db.Column('id_materiaPrima', db.Integer, db.ForeignKey('materia_prima.id_materiaPrima'), primary_key=True)
 )
 
-class Fornecedor(db.Model):
+class fornecedor(db.Model):
     __tablename__ = 'fornecedor'
     
     id_fornecedor = db.Column(db.Integer, primary_key=True)
-    razaoSocial = db.Column(db.String(100), nullable=True)
-    cnpj = db.Column(db.String(15), nullable=True)
-    contato = db.Column(db.String(15), nullable=True)
+    razao_social = db.Column(db.String(100), nullable=False)
+    cnpj = db.Column(db.String(15), nullable=False)
+    contato = db.Column(db.String(15), nullable=False)
     
     materiais = db.relationship('materia_prima', secondary=fornecedor_materiaPrima, backref='fornecedores')
     
-    def __init__(self, razaoSocial, cnpj, contato):
-        self.razaoSocial = razaoSocial
+    def __init__(self, razao_social, cnpj, contato):
+        self.razao_social = razao_social
         self.cnpj = cnpj
         self.contato = contato
     
@@ -24,7 +24,7 @@ class Fornecedor(db.Model):
     def to_disc(self, incluir_materiais=False):
         data = {
             'id': self.id_fornecedor,
-            "razaoSocial": self.razaoSocial,
+            "razao_social": self.razao_social,
             'cnpj': self.cnpj,
             'contato': self.contato
         }

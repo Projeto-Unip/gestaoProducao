@@ -1,20 +1,25 @@
 from flask import Blueprint, jsonify, request
-from models.fornecedor import Fornecedor
+from models.fornecedor import fornecedor
 from database.dba import db
 
 fornecedor_db = Blueprint('fornecedor', __name__, url_prefix="/api")
 
-@fornecedor_db.route("/fornecedores", methods=["GET"])
+@fornecedor_db.route("/filtraFornecedores", methods=["GET"])
 def listar():
     try:
-        stmt = db.select(Fornecedor)
+        stmt = db.select(fornecedor)
         fornecedores = db.session.execute(stmt).scalars().all()
-        
+
         fornecedores_list = [f.to_disc() for f in fornecedores]
+        print(fornecedores_list)
         return jsonify(fornecedores_list), 200
+    
     except Exception as e:
         print(f"Erro na consulta: {e}")
-        return jsonify({"erro": "Ocorreu um erro ao buscar fornecedores"}), 500
+        return jsonify({"erro": e}), 500
+
+
+
 
 
 @fornecedor_db.route("/addFornecedor", methods=["POST"])
@@ -27,16 +32,16 @@ def addFornecedor():
         
         # Verificando se o fornecedor existe no dba por CNPJ
         cnpj_normalizado = dados.get('cnpj').strip()
-        stmt = db.select(Fornecedor).where(Fornecedor.cnpj == cnpj_normalizado)
+        stmt = db.select(fornecedor).where(fornecedor.cnpj == cnpj_normalizado)
         existFornecedor = db.session.execute(stmt).scalars().first()
         
         if not existFornecedor:
-            razao_normalizada = dados.get('razaoSocial').strip().lower()
-            novoFornecedor = Fornecedor(
-                razaoSocial=razao_normalizada,
+            razao_normalizada = dados.get('razao_social').strip().lower()
+            novoFornecedor = fornecedor(
+                razao_social=razao_normalizada,
                 cnpj=cnpj_normalizado,
                 contato=dados.get('contato')
-            )
+            ) 
             
             db.session.add(novoFornecedor)
             db.session.commit()
@@ -58,20 +63,20 @@ def updateFornecedor(idFornecedor):
         return jsonify({"erro": "Dados não recebidos corretamente, verifique as informações inseridas."}), 400
     
     try:
-        fornecedor = db.session.get(Fornecedor, idFornecedor)
+        forn = db.session.get(fornecedor, idFornecedor)
         
-        if fornecedor is None:
+        if forn is None:
             return jsonify({"erro": f"Fornecedor com ID {idFornecedor} não encontrado."}), 404
         
-        if 'razaoSocial' in dados_json:
-            fornecedor.razaoSocial = dados_json['razaoSocial'].strip().lower()
+        if 'razao_social' in dados_json:
+            forn.razao_social = dados_json['razao_social'].strip().lower()
         if 'cnpj' in dados_json:
-            fornecedor.cnpj = dados_json['cnpj'].strip()
+            forn.cnpj = dados_json['cnpj'].strip()
         if 'contato' in dados_json:
-            fornecedor.contato = dados_json['contato']
+            forn.contato = dados_json['contato']
         
         db.session.commit()
-        return jsonify(fornecedor.to_disc()), 200
+        return jsonify(forn.to_disc()), 200
         
     except Exception as e:
         db.session.rollback()
@@ -81,13 +86,13 @@ def updateFornecedor(idFornecedor):
 @fornecedor_db.route("/fornecedor/<string:cnpj>", methods=["GET"])
 def buscarFornecedor(cnpj):
     try:
-        stmt = db.select(Fornecedor).where(Fornecedor.cnpj == cnpj)
-        fornecedor = db.session.execute(stmt).scalars().first()
+        stmt = db.select(fornecedor).where(fornecedor.cnpj == cnpj)
+        forn = db.session.execute(stmt).scalars().first()
         
-        if fornecedor is None:
+        if forn is None:
             return jsonify({"erro": f"Fornecedor com CNPJ '{cnpj}' não encontrado."}), 404
         
-        return jsonify(fornecedor.to_disc()), 200
+        return jsonify(forn.to_disc()), 200
     
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
@@ -96,7 +101,7 @@ def buscarFornecedor(cnpj):
 @fornecedor_db.route("/fornecedor/<int:idFornecedor>", methods=["DELETE"])
 def deleteFornecedor(idFornecedor):
     try:
-        fornecedor = db.session.get(Fornecedor, idFornecedor)
+        fornecedor = db.session.get(fornecedor, idFornecedor)
         
         if fornecedor is None:
             return jsonify({"erro": f"Fornecedor com ID {idFornecedor} não encontrado."}), 404
@@ -104,7 +109,7 @@ def deleteFornecedor(idFornecedor):
         db.session.delete(fornecedor)
         db.session.commit()
         
-        return jsonify({"mensagem": f"Fornecedor '{fornecedor.razaoSocial}' deletado com sucesso."}), 200
+        return jsonify({"mensagem": f"Fornecedor '{fornecedor.razao_social}' deletado com sucesso."}), 200
         
     except Exception as e:
         db.session.rollback()
